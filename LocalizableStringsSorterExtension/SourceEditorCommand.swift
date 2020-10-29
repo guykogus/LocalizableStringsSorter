@@ -10,21 +10,20 @@ import Foundation
 import XcodeKit
 
 class SourceEditorCommand: NSObject, XCSourceEditorCommand {
-    private func isLocalizationLine(_ object: Any) -> Bool {
+    private static func isLocalizationLine(_ object: Any) -> Bool {
         guard let line = object as? String else { return false }
         return line.first == "\"" && line.suffix(2) == ";\n"
     }
 
     func perform(with invocation: XCSourceEditorCommandInvocation, completionHandler: @escaping (Error?) -> Void ) -> Void {
-        let localizationLines = invocation
-            .buffer
-            .lines
+        let localizationLines = invocation.buffer.lines.copy() as! NSArray
 
         var lineNumbers = [Int]()
         var lines = [String]()
+
         lineNumbers.reserveCapacity(localizationLines.count)
         lines.reserveCapacity(localizationLines.count)
-        for localizationLine in localizationLines.enumerated() where isLocalizationLine(localizationLine.element) {
+        for localizationLine in localizationLines.enumerated() where SourceEditorCommand.isLocalizationLine(localizationLine.element) {
             lineNumbers.append(localizationLine.offset)
             lines.append(localizationLine.element as! String)
         }
